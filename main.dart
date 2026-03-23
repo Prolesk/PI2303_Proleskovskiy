@@ -10,6 +10,7 @@ void main() {
   );
 
   print('Доступные команды:');
+  print('add - добавить ресурс');
   print('coffee - приготовить кофе');
   print('exit - выход');
 
@@ -18,7 +19,11 @@ void main() {
     String command = stdin.readLineSync()?.toLowerCase() ?? '';
 
     switch (command) {
-        
+
+      case 'add':
+      _addResource(machine);
+      break;
+
       case 'coffee':
         _makeCoffee(machine);
         break;
@@ -33,7 +38,42 @@ void main() {
   }
 }
 
-
+void _addResource(Machine machine) {
+  print('\nКакой ресурс добавить?');
+  print('coffeeBeans - кофе');
+  print('milk - молоко');
+  print('water - вода');
+  
+  stdout.write('Выберите ресурс: ');
+  String resource = stdin.readLineSync()?.toLowerCase() ?? '';
+  
+  stdout.write('Введите количество: ');
+  int? amount = int.tryParse(stdin.readLineSync() ?? '');
+  
+  if (amount == null || amount <= 0) {
+    print('Ошибка: введите корректное положительное число');
+    return;
+  }
+  
+  switch (resource) {
+    case 'coffeebeans':
+      machine.coffeeBeans += amount;
+      print('Добавлено $amount кофе');
+      break;
+    case 'milk':
+      machine.milk += amount;
+      print('Добавлено $amount молока');
+      break;
+    case 'water':
+      machine.water += amount;
+      print('Добавлено $amount воды');
+      break;
+    default:
+      print('Неизвестный ресурс');
+  }
+  
+  _showResources(machine);
+}
 
 void _makeCoffee(Machine machine) {
   print('\nПроверка ресурсов для эспрессо...');
