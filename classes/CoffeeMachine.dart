@@ -1,1 +1,55 @@
+class Machine {
 
+  int _coffeeBeans = 0;
+  int _milk = 0;
+  int _water = 0;
+  int _cash = 0;
+
+  int get coffeeBeans => _coffeeBeans;
+  int get milk => _milk;
+  int get water => _water;
+  int get cash => _cash;
+
+  set coffeeBeans(int value) {
+    if (value >= 0) {
+      _coffeeBeans = value;
+    }
+  }
+
+  set milk(int value) {
+    if (value >= 0) {
+      _milk = value;
+    }
+  }
+
+  set water(int value) {
+    if (value >= 0) {
+      _water = value;
+    }
+  }
+
+  set cash(int value) {
+    if (value >= 0) {
+      _cash = value;
+    }
+  }
+
+  bool isAvailableResources() {
+    return _coffeeBeans >= 50 && _water >= 100;
+  }
+
+  void _subtractResources() {
+    _coffeeBeans -= 50;
+    _water -= 100;
+    _cash += 100;
+  }
+
+  bool makingCoffee() {
+    if (isAvailableResources()) {
+      _subtractResources();
+      return true;
+    }
+    return false;
+  }
+
+}
