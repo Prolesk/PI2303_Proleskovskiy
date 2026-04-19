@@ -1,102 +1,64 @@
 import 'dart:io';
-import 'classes/CoffeeMachine.dart';
+import 'classes/Machine.dart';
+import 'classes/Enums.dart';
 
 void main() {
-  Machine machine = Machine(
-    coffeeBeans: 200,
-    milk: 200,
-    water: 200,
-    cash: 0,
-  );
-
-  print('Доступные команды:');
-  print('add - добавить ресурс');
-  print('coffee - приготовить кофе');
-  print('exit - выход');
+  Machine machine = Machine();
 
   while (true) {
-    stdout.write('\nВведите команду: ');
-    String command = stdin.readLineSync()?.toLowerCase() ?? '';
+    print("1 - Эспрессо");
+    print("2 - Капучино");
+    print("3 - Американо");
+    print("4 - Добавить воду");
+    print("5 - Добавить молоко");
+    print("6 - Добавить зерна");
+    print("7 - Статус");
+    print("0 - Выход");
 
-    switch (command) {
+    stdout.write("Выбор: ");
+    String? input = stdin.readLineSync();
 
-      case 'add':
-      _addResource(machine);
-      break;
-
-      case 'coffee':
-        _makeCoffee(machine);
+    switch (input) {
+      case "1":
+        machine.makeCoffee(CoffeeType.espresso);
         break;
-        
-      case 'exit':
-        print('Работа программы завершена');
+
+      case "2":
+        machine.makeCoffee(CoffeeType.cappuccino);
+        break;
+
+      case "3":
+        machine.makeCoffee(CoffeeType.americano);
+        break;
+
+      case "4":
+        stdout.write("Введите количество воды: ");
+        int amount = int.parse(stdin.readLineSync()!);
+        machine.addWater(amount);
+        break;
+
+      case "5":
+        stdout.write("Введите количество молока: ");
+        int amount = int.parse(stdin.readLineSync()!);
+        machine.addMilk(amount);
+        break;
+
+      case "6":
+        stdout.write("Введите количество зерен: ");
+        int amount = int.parse(stdin.readLineSync()!);
+        machine.addCoffeeBeans(amount);
+        break;
+
+      case "7":
+        machine.showStatus();
+        break;
+
+      case "0":
+        print("Выход...");
         return;
-        
+
       default:
-        print('Неизвестная команда. Доступные команды: add, coffee, exit');
+        print("Ошибка ввода");
     }
   }
-}
-
-void _addResource(Machine machine) {
-  print('\nКакой ресурс добавить?');
-  print('coffeeBeans - кофе');
-  print('milk - молоко');
-  print('water - вода');
-  
-  stdout.write('Выберите ресурс: ');
-  String resource = stdin.readLineSync()?.toLowerCase() ?? '';
-  
-  stdout.write('Введите количество: ');
-  int? amount = int.tryParse(stdin.readLineSync() ?? '');
-  
-  if (amount == null || amount <= 0) {
-    print('Ошибка: введите корректное положительное число');
-    return;
-  }
-  
-  switch (resource) {
-    case 'coffeebeans':
-      machine.coffeeBeans += amount;
-      print('Добавлено $amount кофе');
-      break;
-    case 'milk':
-      machine.milk += amount;
-      print('Добавлено $amount молока');
-      break;
-    case 'water':
-      machine.water += amount;
-      print('Добавлено $amount воды');
-      break;
-    default:
-      print('Неизвестный ресурс');
-  }
-  
-  _showResources(machine);
-}
-
-void _makeCoffee(Machine machine) {
-  print('\nПроверка ресурсов для эспрессо...');
-  
-  if (machine.isAvailableResources()) {
-    print('Ресурсов достаточно');
-    machine.makingCoffee();
-    print('Кофе готов');
-    print('С машины списано: 50 гр кофе, 100 мл воды');
-    print('В машину добавлено: 100 руб');
-  } else {
-    print('Недостаточно ресурсов для приготовления кофе');
-    print('Требуется: 50 гр кофе, 100 мл воды');
-  }
-  
-  _showResources(machine);
-}
-
-void _showResources(Machine machine) {
-  print('\n--- Текущие ресурсы машины ---');
-  print('Кофе: ${machine.coffeeBeans} гр');
-  print('Молоко: ${machine.milk} мл');
-  print('Вода: ${machine.water} мл');
-  print('Деньги: ${machine.cash} руб');
-  print('-------------------------------');
 }
