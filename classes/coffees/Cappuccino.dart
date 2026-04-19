@@ -8,6 +8,7 @@ class Cappuccino extends Coffee {
       water: 100,
       milk: 150,
       coffeeBeans: 50,
+      cash: 130,
     );
   }
 

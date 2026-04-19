@@ -8,6 +8,7 @@ class Americano extends Coffee {
       water: 200,
       milk: 0,
       coffeeBeans: 50,
+      cash: 120,
     );
   }
 

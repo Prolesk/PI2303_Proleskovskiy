@@ -47,7 +47,7 @@ class Machine {
 
     if (_isEnough(r)) {
       _subtract(r);
-      cash += 100;
+      cash += r.cash;
       print("${coffee.getName()} готов ☕");
     } else {
       print("Недостаточно ресурсов!");
