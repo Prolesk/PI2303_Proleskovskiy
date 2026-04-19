@@ -2,7 +2,7 @@ import 'dart:io';
 import 'classes/Machine.dart';
 import 'classes/Enums.dart';
 
-void main() {
+void main() async {
   Machine machine = Machine();
 
   while (true) {
@@ -20,33 +20,33 @@ void main() {
 
     switch (input) {
       case "1":
-        machine.makeCoffee(CoffeeType.espresso);
+        await machine.makeCoffee(CoffeeType.espresso);
         break;
 
       case "2":
-        machine.makeCoffee(CoffeeType.cappuccino);
+        await machine.makeCoffee(CoffeeType.cappuccino);
         break;
 
       case "3":
-        machine.makeCoffee(CoffeeType.americano);
+        await machine.makeCoffee(CoffeeType.americano);
         break;
 
       case "4":
-        stdout.write("Введите количество воды: ");
-        int amount = int.parse(stdin.readLineSync()!);
-        machine.addWater(amount);
+        stdout.write("Введите воду: ");
+        int? w = int.tryParse(stdin.readLineSync()!);
+        if (w != null) machine.addWater(w);
         break;
 
       case "5":
-        stdout.write("Введите количество молока: ");
-        int amount = int.parse(stdin.readLineSync()!);
-        machine.addMilk(amount);
+        stdout.write("Введите молоко: ");
+        int? m = int.tryParse(stdin.readLineSync()!);
+        if (m != null) machine.addMilk(m);
         break;
 
       case "6":
-        stdout.write("Введите количество зерен: ");
-        int amount = int.parse(stdin.readLineSync()!);
-        machine.addCoffeeBeans(amount);
+        stdout.write("Введите зерна: ");
+        int? b = int.tryParse(stdin.readLineSync()!);
+        if (b != null) machine.addCoffeeBeans(b);
         break;
 
       case "7":
@@ -54,11 +54,10 @@ void main() {
         break;
 
       case "0":
-        print("Выход...");
         return;
 
       default:
-        print("Ошибка ввода");
+        print("Ошибка");
     }
   }
 }

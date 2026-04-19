@@ -1,9 +1,9 @@
+import 'dart:async';
+import 'AsyncMethods.dart';
 import 'Enums.dart';
 import 'Coffee.dart';
 import 'Recourses.dart';
-import 'coffees/Espresso.dart';
-import 'coffees/Cappuccino.dart';
-import 'coffees/Americano.dart';
+
 
 class Machine {
   int water;
@@ -18,16 +18,7 @@ class Machine {
     this.cash = 0,
   });
 
-  Coffee _createCoffee(CoffeeType type) {
-    switch (type) {
-      case CoffeeType.espresso:
-        return Espresso();
-      case CoffeeType.cappuccino:
-        return Cappuccino();
-      case CoffeeType.americano:
-        return Americano();
-    }
-  }
+
 
   bool _isEnough(Recourses r) {
     return water >= r.water &&
@@ -41,18 +32,40 @@ class Machine {
     coffeeBeans -= r.coffeeBeans;
   }
 
-  void makeCoffee(CoffeeType type) {
-    Coffee coffee = _createCoffee(type);
-    Recourses r = coffee.getRecourses();
+Future<void> makeCoffee(CoffeeType type) async {
+  Coffee coffee = Coffee.create(type);
+  Recourses r = coffee.getRecourses();
 
-    if (_isEnough(r)) {
-      _subtract(r);
-      cash += r.cash;
-      print("${coffee.getName()} готов ☕");
-    } else {
-      print("Недостаточно ресурсов!");
-    }
+  if (!_isEnough(r)) {
+    print("Недостаточно ресурсов!");
+    return;
   }
+
+  print("\n=== Готовим ${coffee.getName()} ===");
+
+  await AsyncMethods.heatWater();
+
+  if (r.milk > 0) {
+    await AsyncMethods.brewCoffee();
+    await AsyncMethods.frothMilk();
+    await AsyncMethods.mixCoffee();
+  } else {
+    await AsyncMethods.brewCoffee();
+  }
+
+  _subtract(r);
+
+  cash += coffee.getPrice();
+
+  print("${coffee.getName()} готов");
+  print("Цена: ${coffee.getPrice()}");
+  
+  print("=== Готово === \n");
+  
+}
+
+
+
 
   void addWater(int amount) => water += amount;
   void addMilk(int amount) => milk += amount;
