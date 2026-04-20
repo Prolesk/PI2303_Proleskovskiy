@@ -8,10 +8,10 @@ class Espresso extends Coffee {
       water: 100,
       milk: 0,
       coffeeBeans: 50,
-      cash: 110,
     );
   }
 
   @override
   String getName() => "Эспрессо";
+  int getCost() => 100;
 }

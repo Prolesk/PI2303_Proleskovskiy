@@ -18,7 +18,7 @@ class Machine {
     this.cash = 0,
   });
 
-  Coffee _createCoffee(CoffeeType type) {
+  Coffee _createCoffeeType(CoffeeType type) {
     switch (type) {
       case CoffeeType.espresso:
         return Espresso();
@@ -42,13 +42,13 @@ class Machine {
   }
 
   void makeCoffee(CoffeeType type) {
-    Coffee coffee = _createCoffee(type);
+    Coffee coffee = _createCoffeeType(type);
     Recourses r = coffee.getRecourses();
 
     if (_isEnough(r)) {
       _subtract(r);
-      cash += r.cash;
-      print("${coffee.getName()} готов ☕");
+      cash += coffee.getCost();
+      print("${coffee.getName()} готов ");
     } else {
       print("Недостаточно ресурсов!");
     }
