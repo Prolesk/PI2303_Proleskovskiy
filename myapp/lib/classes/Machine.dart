@@ -1,9 +1,7 @@
-import 'dart:async';
 import 'AsyncMethods.dart';
 import 'Enums.dart';
 import 'Coffee.dart';
 import 'Recourses.dart';
-
 
 class Machine {
   int water;
@@ -18,12 +16,8 @@ class Machine {
     this.cash = 0,
   });
 
-
-
   bool _isEnough(Recourses r) {
-    return water >= r.water &&
-        milk >= r.milk &&
-        coffeeBeans >= r.coffeeBeans;
+    return water >= r.water && milk >= r.milk && coffeeBeans >= r.coffeeBeans;
   }
 
   void _subtract(Recourses r) {
@@ -32,51 +26,42 @@ class Machine {
     coffeeBeans -= r.coffeeBeans;
   }
 
-Future<void> makeCoffee(CoffeeType type) async {
-  Coffee coffee = Coffee.create(type);
-  Recourses r = coffee.getRecourses();
+  Future<void> makeCoffee(
+    CoffeeType type, {
+    required Function(String) onUpdate,
+  }) async {
+    Coffee coffee = Coffee.create(type);
+    Recourses r = coffee.getRecourses();
 
-  if (!_isEnough(r)) {
-    print("Недостаточно ресурсов!");
-    return;
+    if (!_isEnough(r)) {
+      onUpdate("Недостаточно ресурсов!");
+      return;
+    }
+
+    onUpdate("Нагрев воды...");
+    await AsyncMethods.heatWater();
+
+    if (r.milk > 0) {
+      onUpdate("Заваривание кофе...");
+      await AsyncMethods.brewCoffee();
+
+      onUpdate("Взбивание молока...");
+      await AsyncMethods.frothMilk();
+
+      onUpdate("Смешивание...");
+      await AsyncMethods.mixCoffee();
+    } else {
+      onUpdate("Заваривание кофе...");
+      await AsyncMethods.brewCoffee();
+    }
+
+    _subtract(r);
+    cash += coffee.getPrice();
+
+    onUpdate("${coffee.getName()} готов ☕");
   }
-
-  print("\n=== Готовим ${coffee.getName()} ===");
-
-  await AsyncMethods.heatWater();
-
-  if (r.milk > 0) {
-    await AsyncMethods.brewCoffee();
-    await AsyncMethods.frothMilk();
-    await AsyncMethods.mixCoffee();
-  } else {
-    await AsyncMethods.brewCoffee();
-  }
-
-  _subtract(r);
-
-  cash += coffee.getPrice();
-
-  print("${coffee.getName()} готов");
-  print("Цена: ${coffee.getPrice()}");
-  
-  print("=== Готово === \n");
-  
-}
-
-
-
 
   void addWater(int amount) => water += amount;
   void addMilk(int amount) => milk += amount;
   void addCoffeeBeans(int amount) => coffeeBeans += amount;
-
-  void showStatus() {
-    print("\n--- СОСТОЯНИЕ ---");
-    print("Вода: $water");
-    print("Молоко: $milk");
-    print("Зерна: $coffeeBeans");
-    print("Деньги: $cash");
-    print("-----------------\n");
-  }
 }
