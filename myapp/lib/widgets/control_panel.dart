@@ -5,7 +5,7 @@ class ControlPanel extends StatefulWidget {
   final Machine machine;
   final VoidCallback update;
 
-  ControlPanel(this.machine, this.update);
+  const ControlPanel(this.machine, this.update, {super.key});
 
   @override
   _ControlPanelState createState() => _ControlPanelState();

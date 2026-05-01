@@ -7,7 +7,7 @@ class ResourcesTab extends StatefulWidget {
   final Machine machine;
   final VoidCallback update;
 
-  ResourcesTab(this.machine, this.update);
+  const ResourcesTab(this.machine, this.update, {super.key});
 
   @override
   _ResourcesTabState createState() => _ResourcesTabState();

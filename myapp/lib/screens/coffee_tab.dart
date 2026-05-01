@@ -7,7 +7,7 @@ class CoffeeTab extends StatefulWidget {
   final Machine machine;
   final VoidCallback update;
 
-  CoffeeTab(this.machine, this.update);
+  const CoffeeTab(this.machine, this.update, {super.key});
 
   @override
   _CoffeeTabState createState() => _CoffeeTabState();

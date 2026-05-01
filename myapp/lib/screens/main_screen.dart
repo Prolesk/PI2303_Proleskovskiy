@@ -4,6 +4,8 @@ import 'coffee_tab.dart';
 import 'resources_tab.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }

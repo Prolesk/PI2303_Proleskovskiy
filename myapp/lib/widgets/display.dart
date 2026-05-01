@@ -4,7 +4,7 @@ import '../classes/Machine.dart';
 class Display extends StatelessWidget {
   final Machine machine;
 
-  Display(this.machine);
+  const Display(this.machine, {super.key});
 
   Widget row(String label, int value) {
     return Padding(
