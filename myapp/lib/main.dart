@@ -1,9 +1,22 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -11,48 +24,57 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'Фотогалерея', home: MyHomePage());
-  }
-}
-
-class Photo {
-  final int id;
-  final String title;
-  final String url;
-  final String thumbnailUrl;
-
-  const Photo({
-    required this.id,
-    required this.title,
-    required this.url,
-    required this.thumbnailUrl,
-  });
-
-  factory Photo.fromJson(Map<String, dynamic> json) {
-    return Photo(
-      id: json['id'],
-      title: json['title'],
-      url: json['url'],
-      thumbnailUrl: json['thumbnailUrl'],
+    return const MaterialApp(
+      title: 'Лента новостей КубГАУ',
+      home: MyHomePage(),
     );
   }
 }
 
-Future<List<Photo>> fetchPhotos() async {
-  final response = await http.get(
-    Uri.parse('https://jsonplaceholder.typicode.com/photos?_limit=50'),
-  );
+class News {
+  final String id;
+  final String activeFrom;
+  final String title;
+  final String previewText;
+  final String previewPictureSrc;
+  final String detailPageUrl;
+  final String detailText;
 
-  if (response.statusCode == 200) {
-    return parsePhotos(response.body);
-  } else {
-    throw Exception('Ошибка загрузки');
+  const News({
+    required this.id,
+    required this.activeFrom,
+    required this.title,
+    required this.previewText,
+    required this.previewPictureSrc,
+    required this.detailPageUrl,
+    required this.detailText,
+  });
+
+  factory News.fromJson(Map<String, dynamic> json) {
+    return News(
+      id: json['ID'] as String,
+      activeFrom: json['ACTIVE_FROM'] as String,
+      title: Bidi.stripHtmlIfNeeded(json['TITLE'] as String),
+      previewText: Bidi.stripHtmlIfNeeded(json['PREVIEW_TEXT'] as String),
+      previewPictureSrc: json['PREVIEW_PICTURE_SRC'] as String,
+      detailPageUrl: json['DETAIL_PAGE_URL'] as String,
+      detailText: Bidi.stripHtmlIfNeeded(json['DETAIL_TEXT'] as String),
+    );
   }
 }
 
-List<Photo> parsePhotos(String responseBody) {
-  final List<dynamic> parsed = jsonDecode(responseBody);
-  return parsed.map<Photo>((json) => Photo.fromJson(json)).toList();
+Future<List<News>> fetchNews() async {
+  final response = await http.get(
+    Uri.parse(
+      'https://kubsau.ru/api/getNews.php?key=6df2f5d38d4e16b5a923a6d4873e2ee295d0ac90',
+    ),
+  );
+  return parseNews(response.body);
+}
+
+List<News> parseNews(String responseBody) {
+  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
+  return parsed.map<News>((json) => News.fromJson(json)).toList();
 }
 
 class MyHomePage extends StatelessWidget {
@@ -61,17 +83,22 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text('Фотогалерея', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green,
+        title: const Text(
+          'Лента новостей КубГАУ',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: false,
       ),
-      body: FutureBuilder<List<Photo>>(
-        future: fetchPhotos(),
+      body: FutureBuilder<List<News>>(
+        future: fetchNews(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Ошибка: ${snapshot.error}'));
+            return Center(child: Text('Ошибка запроса: ${snapshot.error}'));
           } else if (snapshot.hasData) {
-            return PhotosList(photos: snapshot.data!);
+            return NewsList(news: snapshot.data!);
           } else {
             return const Center(child: CircularProgressIndicator());
           }
@@ -81,49 +108,80 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-class PhotosList extends StatelessWidget {
-  const PhotosList({super.key, required this.photos});
-  final List<Photo> photos;
+class NewsList extends StatelessWidget {
+  const NewsList({super.key, required this.news});
+  final List<News> news;
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(4),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
-      ),
-      itemCount: photos.length,
+    return ListView.builder(
+      itemCount: news.length,
       itemBuilder: (context, index) {
-        final photo = photos[index];
+        return NewsCard(news: news[index]);
+      },
+    );
+  }
+}
 
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: GridTile(
-            footer: Container(
-              color: Colors.black54,
-              padding: const EdgeInsets.all(4),
-              child: Text(
-                photo.title,
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            child: Image.network(
-              photo.thumbnailUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image),
-                );
-              },
+class NewsCard extends StatelessWidget {
+  const NewsCard({super.key, required this.news});
+  final News news;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.network(
+            news.previewPictureSrc,
+            width: double.infinity,
+            height: 200,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: double.infinity,
+                height: 200,
+                color: Colors.grey[300],
+                child: const Icon(Icons.error),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  news.activeFrom,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  news.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  news.previewText,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
