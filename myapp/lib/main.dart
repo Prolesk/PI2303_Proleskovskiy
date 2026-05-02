@@ -10,60 +10,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Калькулятор площади',
+      title: 'Навигация',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const CalculatorPage(),
+      home: const FirstScreen(),
     );
   }
 }
 
-class CalculatorPage extends StatefulWidget {
-  const CalculatorPage({super.key});
+class FirstScreen extends StatelessWidget {
+  const FirstScreen({super.key});
 
-  @override
-  State<CalculatorPage> createState() => _CalculatorPageState();
-}
-
-class _CalculatorPageState extends State<CalculatorPage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _widthController = TextEditingController();
-  final TextEditingController _heightController = TextEditingController();
-
-  String _resultText = 'Задайте параметры';
-
-  void _validateAndCalculate() {
-    if (_formKey.currentState!.validate()) {
-      double width = double.parse(_widthController.text);
-      double height = double.parse(_heightController.text);
-      double area = width * height;
-
-      setState(() {
-        _resultText = 'S = $width × $height = ${area.toStringAsFixed(2)} мм²';
-      });
-    } else {
-      setState(() {
-        _resultText = 'Задайте параметры';
-      });
-    }
-  }
-
-  String? _validateInput(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Заполните поле';
-    }
-    if (value.contains('e') || value.contains('E')) {
-      return 'Числа с E не допускаются';
-    }
-    final number = double.tryParse(value);
-    if (number == null) {
-      return 'Введите корректное число';
-    }
-    if (number < 0) {
-      return 'Число не может быть отрицательным';
-    }
-    return null;
+  void _showResult(BuildContext context, String choice) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(choice, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+      ),
+    );
   }
 
   @override
@@ -72,74 +37,79 @@ class _CalculatorPageState extends State<CalculatorPage> {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text(
-          'Калькулятор площади',
+          'Возвращение значения',
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Ширина(мм):',
-                style: TextStyle(fontSize: 16, color: Colors.black),
-              ),
-              TextFormField(
-                controller: _widthController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: 'Введите ширину',
-                  border: UnderlineInputBorder(),
-                  focusedBorder: UnderlineInputBorder(),
-                  enabledBorder: UnderlineInputBorder(),
-                ),
-                validator: _validateInput,
-              ),
-              const SizedBox(height: 16),
-
-              const Text(
-                'Высота(мм):',
-                style: TextStyle(fontSize: 16, color: Colors.black),
-              ),
-              TextFormField(
-                controller: _heightController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: 'Введите высоту',
-                  border: UnderlineInputBorder(),
-                  focusedBorder: UnderlineInputBorder(),
-                  enabledBorder: UnderlineInputBorder(),
-                ),
-                validator: _validateInput,
-              ),
-              const SizedBox(height: 24),
-
-              Center(
-                child: ElevatedButton(
-                  onPressed: _validateAndCalculate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Вычислить'),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              Text(
-                _resultText,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ],
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SecondScreen()),
+            );
+            if (result != null) {
+              _showResult(context, result);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
           ),
+          child: const Text('Приступить к выбору ...'),
+        ),
+      ),
+    );
+  }
+}
+
+class SecondScreen extends StatelessWidget {
+  const SecondScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        title: const Text(
+          'Выберите любой вариант',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, 'Да!');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Да!'),
+            ),
+            const SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, 'Нет');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Нет'),
+            ),
+          ],
         ),
       ),
     );
